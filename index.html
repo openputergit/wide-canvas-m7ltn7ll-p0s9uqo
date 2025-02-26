@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StackOverflow Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .loader { 
+            border-top-color: #3b82f6;
+            animation: spinner 1s linear infinite;
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .question-preview { 
+            border-left: 3px solid transparent; 
+            transition: all 0.2s; 
+        }
+        .question-preview:hover { 
+            border-left: 3px solid #3b82f6; 
+            background-color: #f8fafc; 
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-white shadow fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://www.vectorlogo.zone/logos/stackoverflow/stackoverflow-icon.svg" alt="StackOverflow">
+                    </div>
+                    <div class="hidden md:ml-6 md:flex md:space-x-8">
+                        <a href="#" class="border-b-2 border-blue-500 text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium">Questions</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Tags</a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">Users</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex-1 flex justify-center px-2 lg:ml-6 lg:justify-end">
+                        <div class="max-w-lg w-full lg:max-w-xs">
+                            <div class="relative">
+                                <input id="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Search" type="search">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="bi bi-search text-gray-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center md:ml-6">
+                        <button id="login-btn" class="ml-3 inline-flex items-center px-4 py-2 border border-blue-500 text-sm font-medium rounded-md text-blue-500 bg-white hover:bg-blue-50">
+                            Log in
+                        </button>
+                        <button id="signup-btn" class="ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600">
+                            Sign up
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">All Questions</h1>
+            <button id="ask-question" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600">
+                Ask Question
+            </button>
+        </div>
+
+        <div class="flex flex-col space-y-4 mb-8">
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600" id="question-count">0 questions</span>
+                <div class="flex space-x-2">
+                    <button class="px-3 py-1.5 text-sm font-medium rounded-full bg-blue-100 text-blue-800">Newest</button>
+                    <button class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-600 hover:bg-gray-100">Active</button>
+                    <button class="px-3 py-1.5 text-sm font-medium rounded-full text-gray-600 hover:bg-gray-100">Unanswered</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="questions-container" class="bg-white shadow overflow-hidden sm:rounded-md">
+            <!-- Questions will be dynamically loaded here -->
+            <div class="flex justify-center p-8">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Template -->
+    <div id="modal" class="hidden fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div id="modal-content">
+                        <!-- Modal content will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize app state
+        const state = {
+            questions: [],
+            user: null,
+            loading: false
+        };
+
+        // API endpoints
+        const API = {
+            base: 'https://r0c8kgwocscg8gsokogwwsw4.zetaverse.one/mongodb',
+            headers: {
+                'Authorization': 'Bearer beNsEHijghTb7RbBcPrlWwsyhKs1',
+                'Content-Type': 'application/json'
+            }
+        };
+
+        // Fetch questions from API
+        async function fetchQuestions() {
+            try {
+                state.loading = true;
+                const response = await fetch(API.base, {
+                    method: 'POST',
+                    headers: API.headers,
+                    body: JSON.stringify({
+                        appSlug: 'stackoverflow-clone-123',
+                        action: 'read',
+                        collection: 'questions'
+                    })
+                });
+                const data = await response.json();
+                state.questions = data.result.read || [];
+                renderQuestions();
+            } catch (error) {
+                console.error('Error fetching questions:', error);
+                showError('Failed to load questions');
+            } finally {
+                state.loading = false;
+            }
+        }
+
+        // Render questions to DOM
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            if (state.loading) {
+                return;
+            }
+
+            document.getElementById('question-count').textContent = `${state.questions.length} questions`;
+
+            container.innerHTML = state.questions.length ? state.questions.map(q => `
+                <div class="question-preview p-6 border-b border-gray-200">
+                    <div class="flex space-x-5">
+                        <div class="flex flex-col items-center space-y-2">
+                            <button class="vote-btn" data-id="${q._id}" data-vote="up">
+                                <i class="bi bi-caret-up-fill text-2xl text-gray-400 hover:text-blue-500"></i>
+                            </button>
+                            <span class="font-medium text-gray-700">${q.votes || 0}</span>
+                            <button class="vote-btn" data-id="${q._id}" data-vote="down">
+                                <i class="bi bi-caret-down-fill text-2xl text-gray-400 hover:text-blue-500"></i>
+                            </button>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-medium">
+                                <a href="#" class="text-blue-600 hover:text-blue-800">${q.title}</a>
+                            </h3>
+                            <p class="mt-2 text-gray-600">${q.body}</p>
+                            <div class="mt-4 flex items-center justify-between">
+                                <div class="flex flex-wrap gap-2">
+                                    ${(q.tags || []).map(tag => `
+                                        <span class="px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">${tag}</span>
+                                    `).join('')}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    asked ${new Date(q.created_at).toLocaleString()} by ${q.author || 'anonymous'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('') : '<div class="p-6 text-center text-gray-500">No questions found</div>';
+
+            // Add event listeners to vote buttons
+            document.querySelectorAll('.vote-btn').forEach(btn => {
+                btn.addEventListener('click', handleVote);
+            });
+        }
+
+        // Handle voting
+        async function handleVote(e) {
+            if (!state.user) {
+                showLoginModal();
+                return;
+            }
+
+            const questionId = e.currentTarget.dataset.id;
+            const voteType = e.currentTarget.dataset.vote;
+            try {
+                const response = await fetch(API.base, {
+                    method: 'POST',
+                    headers: API.headers,
+                    body: JSON.stringify({
+                        appSlug: 'stackoverflow-clone-123',
+                        action: 'update',
+                        collection: 'questions',
+                        id: questionId,
+                        data: {
+                            votes: voteType === 'up' ? 1 : -1
+                        }
+                    })
+                });
+                await fetchQuestions();
+            } catch (error) {
+                console.error('Error voting:', error);
+                showError('Failed to register vote');
+            }
+        }
+
+        // Modal handling
+        function showModal(content) {
+            document.getElementById('modal-content').innerHTML = content;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function showLoginModal() {
+            showModal(`
+                <div class="space-y-6">
+                    <h3 class="text-lg font-medium text-gray-900">Log in to your account</h3>
+                    <form id="login-form" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Password</label>
+                            <input type="password" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div class="flex justify-between">
+                            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-600">
+                                Log in
+                            </button>
+                            <button type="button" onclick="hideModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `);
+        }
+
+        // Event Listeners
+        document.getElementById('login-btn').addEventListener('click', showLoginModal);
+        document.getElementById('ask-question').addEventListener('click', () => {
+            if (!state.user) {
+                showLoginModal();
+                return;
+            }
+            // Show ask question form
+        });
+
+        // Initialize
+        fetchQuestions();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
